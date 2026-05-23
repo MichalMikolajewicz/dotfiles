@@ -1,6 +1,9 @@
+local profile = require("config.profile")
+
 return {
   {
     "neovim/nvim-lspconfig",
+    enabled = function() return profile.has("rust") end,
     opts = {
       servers = {
         rust_analyzer = {
@@ -17,6 +20,7 @@ return {
   },
   {
     "simrat39/rust-tools.nvim",
+    enabled = function() return profile.has("rust") end,
     opts = {
       tools = {
         hover_actions = {

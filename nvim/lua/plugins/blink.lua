@@ -1,5 +1,20 @@
+local profile = require("config.profile")
+
+local sources_default = { "lsp", "path", "snippets", "buffer" }
+local sources_providers = {}
+
+if profile.has("csharp") then
+  table.insert(sources_default, "easy-dotnet")
+  sources_providers["easy-dotnet"] = {
+    name = "easy-dotnet",
+    enabled = true,
+    module = "easy-dotnet.completion.blink",
+    score_offset = 10000,
+    async = true,
+  }
+end
+
 return {
-  -- Blink.cmp - Fast completion plugin
   {
     "saghen/blink.cmp",
     version = "*",
@@ -11,16 +26,8 @@ return {
         implementation = "prefer_rust_with_warning",
       },
       sources = {
-        default = { "lsp", "path", "snippets", "buffer", "easy-dotnet" },
-        providers = {
-          ["easy-dotnet"] = {
-            name = "easy-dotnet",
-            enabled = true,
-            module = "easy-dotnet.completion.blink",
-            score_offset = 10000, -- High priority for package completion
-            async = true,
-          },
-        },
+        default = sources_default,
+        providers = sources_providers,
       },
       completion = {
         accept = {

@@ -3,9 +3,12 @@
 -- EasyDotnet global tool is auto-installed by the plugin on first use.
 -- No Mason entries needed: Roslyn LSP and netcoredbg are both bundled in EasyDotnet.
 
+local profile = require("config.profile")
+
 return {
   {
     "GustavEikaas/easy-dotnet.nvim",
+    enabled = function() return profile.has("csharp") end,
     dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim" },
     ft = { "cs", "csproj", "sln", "fsproj" },
     config = function()
@@ -45,6 +48,7 @@ return {
   -- C# treesitter grammar
   {
     "nvim-treesitter/nvim-treesitter",
+    enabled = function() return profile.has("csharp") end,
     opts = function(_, opts)
       vim.list_extend(opts.ensure_installed, { "c_sharp" })
     end,
