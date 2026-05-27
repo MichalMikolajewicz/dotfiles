@@ -1,4 +1,6 @@
-# 💤 LazyVim
+# nvim
 
-A starter template for [LazyVim](https://github.com/LazyVim/LazyVim).
-Refer to the [documentation](https://lazyvim.github.io/installation) to get started.
+Neovim config based on [LazyVim](https://lazyvim.github.io).
+
+Loaded profile is read from `.profile` (written by `install.sh`, gitignored).
+See the [dotfiles README](../README.md) for setup instructions.
