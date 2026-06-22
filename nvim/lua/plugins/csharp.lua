@@ -9,7 +9,7 @@ return {
   {
     "GustavEikaas/easy-dotnet.nvim",
     enabled = function() return profile.has("csharp") end,
-    dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim" },
+    dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim", "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
     ft = { "cs", "csproj", "sln", "fsproj" },
     config = function()
       require("easy-dotnet").setup({
@@ -42,6 +42,12 @@ return {
         debugger = { auto_register_dap = true },
         test_runner = { viewmode = "float" },
       })
+
+      local dap, dapui = require("dap"), require("dapui")
+      dapui.setup()
+      dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
+      dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
+      dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
     end,
   },
 
