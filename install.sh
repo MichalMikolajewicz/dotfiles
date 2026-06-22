@@ -22,11 +22,12 @@ link() {
   local src="$1"
   local dest="$2"
   mkdir -p "$(dirname "$dest")"
-  ln -sf "$src" "$dest"
+  ln -snf "$src" "$dest"
   echo "linked $dest -> $src"
 }
 
 link "$DOTFILES/nvim" "$HOME/.config/nvim"
+link "$DOTFILES/tmux" "$HOME/.config/tmux"
 
 echo "$PROFILE" > "$HOME/.config/nvim/.profile"
 echo "profile: $PROFILE"
