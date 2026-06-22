@@ -30,6 +30,13 @@ return {
           roslynator_enabled = true,
           analyzer_assemblies = {},
           config = {
+            on_init = function(client)
+              -- Turn off pull diagnostics. nvim 0.11+ enables them, but Roslyn errors on
+              -- textDocument/diagnostic (-30099, https://github.com/dotnet/roslyn/issues/81410).
+              -- Push diagnostics (publishDiagnostics) still work — same as pre-0.11 neovim,
+              -- which is why this never happened on the old setup.
+              client.server_capabilities.diagnosticProvider = false
+            end,
             settings = {
               ["csharp|inlay_hints"] = {
                 csharp_enable_inlay_hints_for_implicit_object_creation = true,
