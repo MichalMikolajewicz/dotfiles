@@ -12,6 +12,18 @@ return {
     dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim", "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
     ft = { "cs", "csproj", "sln", "fsproj" },
     config = function()
+      -- Silence the known Roslyn "-30099 failed to get language for textDocument/diagnostic"
+      -- spam (https://github.com/dotnet/roslyn/issues/81410): pull diagnostics fail on
+      -- not-fully-loaded docs and nvim surfaces every error. Drop just that error;
+      -- push diagnostics (and everything else) are unaffected.
+      local orig = vim.lsp.handlers["textDocument/diagnostic"]
+      vim.lsp.handlers["textDocument/diagnostic"] = function(err, result, ctx, cfg)
+        if err and (err.message or ""):lower():find("failed to get language") then
+          return
+        end
+        return orig and orig(err, result, ctx, cfg)
+      end
+
       require("easy-dotnet").setup({
         lsp = {
           enabled = true,
