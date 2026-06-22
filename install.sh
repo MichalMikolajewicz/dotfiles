@@ -10,6 +10,10 @@ if ! command -v nvim &>/dev/null; then
   echo "error: neovim is not installed"
   exit 1
 fi
+if ! command -v git &>/dev/null; then
+  echo "error: git is not installed (needed to fetch tmux plugins)"
+  exit 1
+fi
 
 # validate profile
 if ! echo "$VALID_PROFILES" | grep -qw "$PROFILE"; then
@@ -48,3 +52,41 @@ link "$DOTFILES/tmux" "$HOME/.config/tmux"
 
 echo "$PROFILE" > "$HOME/.config/nvim/.profile"
 echo "profile: $PROFILE"
+
+# Fetch tmux plugins (TPM + every @plugin in tmux.conf).
+#
+# plugins/ is gitignored, so a fresh checkout has none — and without
+# vim-tmux-navigator the seamless <C-h/j/k/l> between nvim and tmux never works,
+# and the catppuccin status bar never renders. Cloning them here makes the
+# install truly one-shot. Idempotent: existing dirs are skipped, so re-runs are
+# cheap. Needs only git; tmux itself does not have to be installed yet.
+bootstrap_tmux_plugins() {
+  local plugdir="$HOME/.config/tmux/plugins"
+  local conf="$HOME/.config/tmux/tmux.conf"
+  mkdir -p "$plugdir"
+
+  clone() { # repo  destdir  name
+    if [ -d "$2/.git" ]; then
+      echo "exists  tmux/$3"
+    elif git clone --quiet --depth 1 "$1" "$2"; then
+      echo "fetched tmux/$3"
+    else
+      rm -rf "$2"                       # clean partial clone so a later run retries
+      echo "warn    failed to clone $1 (tmux plugins incomplete)"
+    fi
+  }
+
+  # TPM first so `prefix + I/U` (install/update) keeps working afterwards.
+  clone https://github.com/tmux-plugins/tpm "$plugdir/tpm" tpm
+
+  # then every declared plugin (TPM is handled above, skip the self-reference)
+  grep -oE "@plugin ['\"][^'\"]+['\"]" "$conf" \
+    | sed -E "s/@plugin ['\"]([^'\"]+)['\"].*/\1/" \
+    | sort -u \
+    | while IFS= read -r repo; do
+        [ "$repo" = "tmux-plugins/tpm" ] && continue
+        name="${repo##*/}"
+        clone "https://github.com/$repo" "$plugdir/$name" "$name"
+      done
+}
+bootstrap_tmux_plugins

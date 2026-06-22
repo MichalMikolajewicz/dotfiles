@@ -53,13 +53,14 @@ dotfiles/
 └── install.sh
 ```
 
-## tmux first run
+## tmux
 
-```bash
-bash install.sh                                  # symlinks ~/.config/tmux
-git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
-tmux                                             # then press  prefix + I  to install plugins
-```
+`install.sh` also fetches the tmux plugins (TPM + everything in `tmux.conf`),
+so seamless `<C-h/j/k/l>` between nvim and tmux panes, the catppuccin status
+bar, etc. work on the first launch with no extra steps.
+
+To update plugins later, use `prefix + U` inside tmux (TPM is installed for this).
+
 
 ## Adding a new tool
 
