@@ -12,31 +12,19 @@ return {
     dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim", "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
     ft = { "cs", "csproj", "sln", "fsproj" },
     config = function()
-      -- Silence the known Roslyn "-30099 failed to get language for textDocument/diagnostic"
-      -- spam (https://github.com/dotnet/roslyn/issues/81410): pull diagnostics fail on
-      -- not-fully-loaded docs and nvim surfaces every error. Drop just that error;
-      -- push diagnostics (and everything else) are unaffected.
-      local orig = vim.lsp.handlers["textDocument/diagnostic"]
-      vim.lsp.handlers["textDocument/diagnostic"] = function(err, result, ctx, cfg)
-        if err and (err.message or ""):lower():find("failed to get language") then
-          return
-        end
-        return orig and orig(err, result, ctx, cfg)
-      end
-
       require("easy-dotnet").setup({
         lsp = {
           enabled = true,
+          set_fold_expr = true,
+          -- Preload Roslyn so it has the project loaded before nvim starts sending
+          -- requests. Without this, the cold-start race produces "-30099 failed to get
+          -- language" on documentHighlight/diagnostic.
+          preload_roslyn = true,
           roslynator_enabled = true,
+          easy_dotnet_analyzer_enabled = true,
+          auto_refresh_codelens = true,
           analyzer_assemblies = {},
           config = {
-            on_init = function(client)
-              -- Turn off pull diagnostics. nvim 0.11+ enables them, but Roslyn errors on
-              -- textDocument/diagnostic (-30099, https://github.com/dotnet/roslyn/issues/81410).
-              -- Push diagnostics (publishDiagnostics) still work — same as pre-0.11 neovim,
-              -- which is why this never happened on the old setup.
-              client.server_capabilities.diagnosticProvider = false
-            end,
             settings = {
               ["csharp|inlay_hints"] = {
                 csharp_enable_inlay_hints_for_implicit_object_creation = true,
@@ -61,12 +49,7 @@ return {
         debugger = { auto_register_dap = true },
         test_runner = { viewmode = "float" },
       })
-
-      local dap, dapui = require("dap"), require("dapui")
-      dapui.setup()
-      dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
-      dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
-      dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
+      -- dapui setup + auto-open/close listeners live in plugins/dap.lua.
     end,
   },
 
