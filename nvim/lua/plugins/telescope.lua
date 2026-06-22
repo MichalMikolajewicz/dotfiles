@@ -4,7 +4,9 @@ return {
     "nvim-lua/plenary.nvim",
     {
       "nvim-telescope/telescope-fzf-native.nvim",
-      build = "make",
+      -- skip the native build where no C compiler exists (locked-down boxes);
+      -- telescope falls back to its lua sorter, so search still works.
+      build = (vim.fn.executable("cc") == 1 or vim.fn.executable("gcc") == 1) and "make" or false,
     },
   },
   keys = {
