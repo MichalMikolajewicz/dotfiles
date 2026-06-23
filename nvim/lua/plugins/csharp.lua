@@ -18,44 +18,17 @@ return {
         lsp = {
           enabled = true,
           set_fold_expr = true,
-          -- Preload Roslyn so it has the project loaded before nvim starts sending
-          -- requests. Without this, the cold-start race produces "-30099 failed to get
-          -- language" on documentHighlight/diagnostic.
+          -- Start loading Roslyn before any buffer opens (snappier first edit).
           preload_roslyn = true,
           roslynator_enabled = true,
           easy_dotnet_analyzer_enabled = true,
           auto_refresh_codelens = true,
           analyzer_assemblies = {},
-          config = {
-            on_init = function(client)
-              -- Disable pull diagnostics. nvim 0.11+ enables them by default, but Roslyn
-              -- rejects textDocument/diagnostic during cold start with -30099 "failed to get
-              -- language" (https://github.com/dotnet/roslyn/issues/81410). Push diagnostics
-              -- (publishDiagnostics) still flow, so squiggles/inline diagnostics are intact —
-              -- preload_roslyn (above) shrinks the cold-start window; this removes the
-              -- remaining -30099 source outright.
-              client.server_capabilities.diagnosticProvider = false
-            end,
-            settings = {
-              ["csharp|inlay_hints"] = {
-                csharp_enable_inlay_hints_for_implicit_object_creation = true,
-                csharp_enable_inlay_hints_for_implicit_variable_types = true,
-                csharp_enable_inlay_hints_for_lambda_parameter_types = true,
-                csharp_enable_inlay_hints_for_types = true,
-                dotnet_enable_inlay_hints_for_indexer_parameters = true,
-                dotnet_enable_inlay_hints_for_literal_parameters = true,
-                dotnet_enable_inlay_hints_for_object_creation_parameters = true,
-                dotnet_enable_inlay_hints_for_other_parameters = true,
-                dotnet_enable_inlay_hints_for_parameters = true,
-                dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = true,
-                dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = true,
-                dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
-              },
-              ["csharp|code_lens"] = {
-                dotnet_enable_references_code_lens = true,
-              },
-            },
-          },
+          -- NOTE: do NOT put LSP `settings` (or on_init) here — easy-dotnet's docs say
+          -- settings belong in lsp/easy_dotnet.lua. Setting `config` here overrides
+          -- easy-dotnet's internal server definition, which is what carries solution
+          -- detection → Roslyn runs with no project → streaming "-30099 failed to get
+          -- language".
         },
         debugger = { auto_register_dap = true },
         test_runner = { viewmode = "float" },
