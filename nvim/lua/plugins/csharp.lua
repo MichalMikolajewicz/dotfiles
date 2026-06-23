@@ -27,6 +27,15 @@ return {
           auto_refresh_codelens = true,
           analyzer_assemblies = {},
           config = {
+            on_init = function(client)
+              -- Disable pull diagnostics. nvim 0.11+ enables them by default, but Roslyn
+              -- rejects textDocument/diagnostic during cold start with -30099 "failed to get
+              -- language" (https://github.com/dotnet/roslyn/issues/81410). Push diagnostics
+              -- (publishDiagnostics) still flow, so squiggles/inline diagnostics are intact —
+              -- preload_roslyn (above) shrinks the cold-start window; this removes the
+              -- remaining -30099 source outright.
+              client.server_capabilities.diagnosticProvider = false
+            end,
             settings = {
               ["csharp|inlay_hints"] = {
                 csharp_enable_inlay_hints_for_implicit_object_creation = true,
