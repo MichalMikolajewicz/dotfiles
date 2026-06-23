@@ -11,9 +11,6 @@ end
 return {
   name = profile,
   has = function(feature)
-    if feature == "rust" then
-      return profile == "full"
-    end
     if feature == "csharp" then
       return profile == "full" or profile == "csharp"
     end

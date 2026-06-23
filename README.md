@@ -5,8 +5,8 @@ Personal configuration files.
 ## Requirements
 
 - [Neovim](https://neovim.io/) >= 0.9
-- [ripgrep](https://github.com/BurntSushi/ripgrep) — for Telescope live grep
-- [fd](https://github.com/sharkdp/fd) — for Telescope file search
+- [ripgrep](https://github.com/BurntSushi/ripgrep) — for live grep (snacks.picker)
+- [fd](https://github.com/sharkdp/fd) — optional, faster file finding (snacks.picker)
 - [tmux](https://github.com/tmux/tmux) — splits + seamless `<C-h/j/k/l>` nav across nvim and panes
 - git
 
@@ -29,8 +29,8 @@ Available profiles:
 
 | Profile | Description |
 |---------|-------------|
-| `full` (default) | Everything: C#, Rust |
-| `csharp` | C# / .NET only, no Rust tooling |
+| `full` (default) | C# / .NET tooling enabled |
+| `csharp` | same as `full` (C# / .NET) |
 
 ## Structure
 
@@ -41,12 +41,12 @@ dotfiles/
 │       ├── config/
 │       │   └── profile.lua reads ~/.config/nvim/.profile
 │       └── plugins/
-│           ├── telescope.lua   core — always loaded
-│           ├── blink.lua       core — always loaded
-│           ├── lualine.lua     core — always loaded
-│           ├── tmux.lua        core — seamless <C-h/j/k/l> w/ tmux
-│           ├── csharp.lua      csharp + full profiles
-│           └── rust.lua        full profile only
+│           ├── colorscheme.lua catppuccin frappe (matches Ghostty/tmux)
+│           ├── blink.lua       completion — always loaded
+│           ├── lualine.lua     statusline — always loaded
+│           ├── tmux.lua        seamless <C-h/j/k/l> w/ tmux + k9s terminal
+│           ├── test.lua        neotest (C# + Vitest)
+│           └── csharp.lua      C#/.NET (easy-dotnet) — csharp + full profiles
 ├── tmux/                   symlinked to ~/.config/tmux
 │   ├── tmux.conf
 │   └── plugins/            TPM-managed (gitignored)

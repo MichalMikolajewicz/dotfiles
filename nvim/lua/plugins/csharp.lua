@@ -9,10 +9,12 @@ return {
   {
     "GustavEikaas/easy-dotnet.nvim",
     enabled = function() return profile.has("csharp") end,
-    dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim", "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
+    dependencies = { "nvim-lua/plenary.nvim", "mfussenegger/nvim-dap", "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
     ft = { "cs", "csproj", "sln", "fsproj" },
     config = function()
       require("easy-dotnet").setup({
+        -- use the same snacks picker as the rest of the config (no telescope)
+        picker = "snacks",
         lsp = {
           enabled = true,
           set_fold_expr = true,
