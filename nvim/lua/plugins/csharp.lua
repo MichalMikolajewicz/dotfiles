@@ -75,8 +75,10 @@ return {
         test_runner = {
           auto_start_testrunner = true,
           hide_legend = false,
-          -- Set to true when using neotest to avoid duplicate signs and conflicting buffer keymaps.
-          neotest_integration = false,
+          -- Using neotest (test.lua) for tests: let it own the .cs buffer keymaps/signs so
+          -- easy-dotnet's <leader>d/<leader>t/<leader>r/<leader>p buffer maps don't shadow dap
+          -- and neotest, and signs don't duplicate. easy-dotnet's own runner still works via :Dotnet.
+          neotest_integration = true,
           ---@type "split" | "vsplit" | "float" | "buf"
           viewmode = "float",
           ---@type number|nil
@@ -168,6 +170,36 @@ return {
             upgrade_all = { lhs = "<leader>pa", desc = "upgrade all outdated packages" },
           },
         },
+      })
+
+      -- ── C# formatting: honor the project .editorconfig and match VS / Rider ──────────
+      -- easy-dotnet forces nvim's legacy GetCSIndent indentexpr (runtime indent/cs.vim) on
+      -- every .cs buffer; it's an old heuristic that ignores .editorconfig and indents
+      -- inconsistently (the "random indentation" madness). So:
+      --  1) drop GetCSIndent on attach → live typing falls back to cindent, which honors
+      --     expandtab/shiftwidth from .editorconfig;
+      --  2) format on save through the Roslyn LSP — the SAME formatter VS/Rider use, fully
+      --     .editorconfig-driven. Output matches the team (no csharpier style divergence,
+      --     no extra tool). Chosen over csharpier deliberately (see summary).
+      local fmt_augroup = vim.api.nvim_create_augroup("easy_dotnet_format", { clear = true })
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = fmt_augroup,
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if not client or client.name ~= "easy_dotnet" then return end
+          -- runs after easy-dotnet's on_attach (which set GetCSIndent), so this wins
+          vim.bo[args.buf].indentexpr = ""
+          vim.bo[args.buf].cindent = true
+        end,
+      })
+      vim.api.nvim_create_autocmd("BufWritePre", {
+        group = fmt_augroup,
+        pattern = "*.cs",
+        callback = function(args)
+          local roslyn = vim.lsp.get_clients({ bufnr = args.buf, name = "easy_dotnet", method = "textDocument/formatting" })
+          if #roslyn == 0 then return end -- Roslyn not ready (cold start) → skip, don't block save
+          vim.lsp.format({ bufnr = args.buf, id = roslyn[1].id, timeout_ms = 3000 })
+        end,
       })
 
       -- Example command

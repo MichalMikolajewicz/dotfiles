@@ -1,19 +1,3 @@
-local profile = require("config.profile")
-
-local sources_default = { "lsp", "path", "snippets", "buffer" }
-local sources_providers = {}
-
-if profile.has("csharp") then
-  table.insert(sources_default, "easy-dotnet")
-  sources_providers["easy-dotnet"] = {
-    name = "easy-dotnet",
-    enabled = true,
-    module = "easy-dotnet.completion.blink",
-    score_offset = 10000,
-    async = true,
-  }
-end
-
 return {
   {
     "saghen/blink.cmp",
@@ -26,8 +10,12 @@ return {
         implementation = "prefer_rust_with_warning",
       },
       sources = {
-        default = sources_default,
-        providers = sources_providers,
+        default = { "lsp", "path", "snippets", "buffer" },
+        -- easy-dotnet package/version completion (PackageReference in .csproj) is provided by
+        -- its ProjX LSP (enabled by default) through the normal "lsp" source — .csproj is
+        -- filetype "xml", which ProjX attaches to. The old "easy-dotnet" blink provider is
+        -- deprecated and was removed (it triggered the `:checkhealth easy-dotnet`
+        -- "cmp source configured, use projx_lsp instead" warning). See easy-dotnet news.md.
       },
       completion = {
         accept = {
