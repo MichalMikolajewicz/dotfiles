@@ -172,33 +172,23 @@ return {
         },
       })
 
-      -- ── C# formatting: honor the project .editorconfig and match VS / Rider ──────────
-      -- easy-dotnet forces nvim's legacy GetCSIndent indentexpr (runtime indent/cs.vim) on
+      -- ── C# indentation: drop easy-dotnet's legacy GetCSIndent indentexpr ─────────────
+      -- easy-dotnet forces nvim's GetCSIndent (runtime indent/cs.vim) as the indentexpr on
       -- every .cs buffer; it's an old heuristic that ignores .editorconfig and indents
-      -- inconsistently (the "random indentation" madness). So:
-      --  1) drop GetCSIndent on attach → live typing falls back to cindent, which honors
-      --     expandtab/shiftwidth from .editorconfig;
-      --  2) format on save through the Roslyn LSP — the SAME formatter VS/Rider use, fully
-      --     .editorconfig-driven. Output matches the team (no csharpier style divergence,
-      --     no extra tool). Chosen over csharpier deliberately (see summary).
+      -- inconsistently (the "random indentation" madness). Clear it on LspAttach (runs after
+      -- easy-dotnet's on_attach, so this wins) and use cindent, which honors expandtab /
+      -- shiftwidth from .editorconfig for sane live auto-indent.
+      -- NOTE: no format-on-save. Roslyn LSP format-on-save was tried but was slow and made
+      -- unwanted edits, so it was removed. Format manually when wanted, e.g.
+      -- `:lua vim.lsp.format()` (Roslyn) or wire up csharpier/dotnet-format via conform.
       local fmt_augroup = vim.api.nvim_create_augroup("easy_dotnet_format", { clear = true })
       vim.api.nvim_create_autocmd("LspAttach", {
         group = fmt_augroup,
         callback = function(args)
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if not client or client.name ~= "easy_dotnet" then return end
-          -- runs after easy-dotnet's on_attach (which set GetCSIndent), so this wins
           vim.bo[args.buf].indentexpr = ""
           vim.bo[args.buf].cindent = true
-        end,
-      })
-      vim.api.nvim_create_autocmd("BufWritePre", {
-        group = fmt_augroup,
-        pattern = "*.cs",
-        callback = function(args)
-          local roslyn = vim.lsp.get_clients({ bufnr = args.buf, name = "easy_dotnet", method = "textDocument/formatting" })
-          if #roslyn == 0 then return end -- Roslyn not ready (cold start) → skip, don't block save
-          vim.lsp.format({ bufnr = args.buf, id = roslyn[1].id, timeout_ms = 3000 })
         end,
       })
 
