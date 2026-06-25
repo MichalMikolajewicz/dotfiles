@@ -34,7 +34,6 @@ return {
       local dapui = require("dapui")
 
       dapui.setup()
-      require("dap-virtual-text").setup()
 
       -- Auto-open/close the UI around a session.
       dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
@@ -46,6 +45,17 @@ return {
       vim.fn.sign_define("DapBreakpointCondition", { text = "", texthl = "DapBreakpointCondition" })
       vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "DapBreakpointRejected" })
       vim.fn.sign_define("DapLogPoint", { text = "", texthl = "DapLogPoint" })
+    end,
+  },
+
+  -- Inline variable values while debugging. Its own spec so lazy loads + configures it
+  -- as a nvim-dap dependency — never require it from another plugin's config (that's what
+  -- crashed before the plugin was fetched).
+  {
+    "theHamsta/nvim-dap-virtual-text",
+    dependencies = { "mfussenegger/nvim-dap" },
+    config = function()
+      require("nvim-dap-virtual-text").setup()
     end,
   },
 }
