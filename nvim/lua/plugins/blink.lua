@@ -6,6 +6,10 @@ return {
       "saghen/blink.compat",
     },
     opts = {
+      -- super-tab: <Tab> accepts (or jumps snippets when the menu is closed), <S-Tab>
+      -- jumps back. <CR> is left unbound, so Enter just inserts a newline (no longer
+      -- accepts) — and it stays out of the way of snippet jumping and indentation.
+      keymap = { preset = "super-tab" },
       fuzzy = {
         implementation = "prefer_rust_with_warning",
       },
