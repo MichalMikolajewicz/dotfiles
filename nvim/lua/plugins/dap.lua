@@ -9,6 +9,7 @@ return {
     "mfussenegger/nvim-dap",
     dependencies = {
       "rcarriga/nvim-dap-ui",
+      "theHamsta/nvim-dap-virtual-text", -- inline variable values while debugging
       "nvim-neotest/nvim-nio", -- required by dap-ui for its async UI
     },
     keys = {
@@ -26,12 +27,14 @@ return {
       { "<leader>dr", function() require("dap").repl.toggle() end, desc = "Debug: Toggle REPL" },
       { "<leader>dl", function() require("dap").run_last() end, desc = "Debug: Run Last" },
       { "<leader>dx", function() require("dap").terminate() end, desc = "Debug: Terminate" },
+      { "<leader>du", function() require("dapui").toggle() end, desc = "Debug: Toggle UI" },
     },
     config = function()
       local dap = require("dap")
       local dapui = require("dapui")
 
       dapui.setup()
+      require("dap-virtual-text").setup()
 
       -- Auto-open/close the UI around a session.
       dap.listeners.after.event_initialized["dapui_config"] = function() dapui.open() end
