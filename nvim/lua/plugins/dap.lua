@@ -40,11 +40,16 @@ return {
       dap.listeners.before.event_terminated["dapui_config"] = function() dapui.close() end
       dap.listeners.before.event_exited["dapui_config"] = function() dapui.close() end
 
-      -- Gutter signs (Nerd Font). Highlight groups are provided by nvim-dap-ui.
+      -- Gutter signs (Nerd Font).
       vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DapBreakpoint" })
       vim.fn.sign_define("DapBreakpointCondition", { text = "", texthl = "DapBreakpointCondition" })
       vim.fn.sign_define("DapBreakpointRejected", { text = "", texthl = "DapBreakpointRejected" })
       vim.fn.sign_define("DapLogPoint", { text = "", texthl = "DapLogPoint" })
+      -- Override highlight colors (dap-ui defaults are often colorless).
+      vim.api.nvim_set_hl(0, "DapBreakpoint",          { fg = "#e51400" })
+      vim.api.nvim_set_hl(0, "DapBreakpointCondition", { fg = "#f5a623" })
+      vim.api.nvim_set_hl(0, "DapBreakpointRejected",  { fg = "#888888" })
+      vim.api.nvim_set_hl(0, "DapLogPoint",            { fg = "#61afef" })
     end,
   },
 

@@ -90,3 +90,31 @@ bootstrap_tmux_plugins() {
       done
 }
 bootstrap_tmux_plugins
+
+# Check / install optional system tools used by Snacks.image.
+#   imagemagick – converts non-PNG images (magick / convert)
+#   mermaid     – renders Mermaid diagrams (mmdc)
+#
+# On macOS with Homebrew we install automatically if missing.
+# On other platforms we just warn; install manually:
+#   imagemagick: apt install imagemagick | pacman -S imagemagick | dnf install imagemagick
+#   mmdc:        npm install -g @mermaid-js/mermaid-cli
+check_image_tools() {
+  local need_magick=0 need_mmdc=0
+  command -v magick  &>/dev/null || command -v convert &>/dev/null || need_magick=1
+  command -v mmdc    &>/dev/null                                    || need_mmdc=1
+
+  if [ "$need_magick" -eq 0 ] && [ "$need_mmdc" -eq 0 ]; then
+    echo "ok      imagemagick + mmdc already present"
+    return 0
+  fi
+
+  if [ "$(uname)" = "Darwin" ] && command -v brew &>/dev/null; then
+    [ "$need_magick" -eq 1 ] && brew install imagemagick && echo "installed imagemagick"
+    [ "$need_mmdc"   -eq 1 ] && brew install mermaid    && echo "installed mermaid (mmdc)"
+  else
+    [ "$need_magick" -eq 1 ] && echo "warn    imagemagick not found – install it for Snacks.image (non-PNG support)"
+    [ "$need_mmdc"   -eq 1 ] && echo "warn    mmdc not found – install @mermaid-js/mermaid-cli for Mermaid diagram rendering"
+  fi
+}
+check_image_tools
