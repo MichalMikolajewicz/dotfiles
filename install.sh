@@ -49,6 +49,7 @@ link() {
 
 link "$DOTFILES/nvim" "$HOME/.config/nvim"
 link "$DOTFILES/tmux" "$HOME/.config/tmux"
+link "$DOTFILES/ghostty" "$HOME/.config/ghostty"
 
 echo "$PROFILE" > "$HOME/.config/nvim/.profile"
 echo "profile: $PROFILE"

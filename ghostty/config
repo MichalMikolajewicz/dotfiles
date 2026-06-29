@@ -1,0 +1,14 @@
+# Gruvbox Material Dark — matches nvim (gruvbox-material, material/medium). tmux has no
+# gruvbox-material theme, so it stays on gruvbox dark (egel/tmux-gruvbox) as the closest
+# match. Use "Gruvbox Dark" / "Gruvbox Dark Hard" to compare with regular gruvbox.
+theme = Gruvbox Material Dark
+
+# Font zoom on Ctrl (not the Ghostty default of ⌘) so it matches Windows
+# Terminal's defaults — Ctrl + / Ctrl - / Ctrl 0 — used at work when SSH'd into
+# RHEL. Same muscle memory on both machines. Font size is a terminal-emulator
+# feature, so Ghostty handles it locally here and Windows Terminal handles it
+# remotely; tmux/nvim over SSH are irrelevant to it.
+keybind = ctrl+plus=increase_font_size:1
+keybind = ctrl+equal=increase_font_size:1
+keybind = ctrl+minus=decrease_font_size:1
+keybind = ctrl+zero=reset_font_size
