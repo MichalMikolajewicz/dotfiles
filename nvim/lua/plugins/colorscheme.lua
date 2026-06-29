@@ -17,6 +17,9 @@ return {
       -- Italic comments are on by default; set gruvbox_material_disable_italic_comment=1 to off.
       vim.g.gruvbox_material_background = "medium"
       vim.g.gruvbox_material_foreground = "material"
+      -- Diagnostic virtual-text: grey(default)=comment-colored & indistinguishable from
+      -- comments; colored=error red, warn yellow, info blue, hint purple (signs already red).
+      vim.g.gruvbox_material_diagnostic_virtual_text = "colored"
     end,
   },
 
