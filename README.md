@@ -25,6 +25,17 @@ cd ~/dotfiles
 bash install.sh [profile]
 ```
 
+If `git clone` is blocked (some proxies/devpods allow plain HTTPS but not git's
+smart-http protocol), grab a tarball instead — no `.git`, so `git pull` won't
+work later, but it's enough to run `install.sh`:
+
+```bash
+curl -fsSL https://codeload.github.com/MichalMikolajewicz/dotfiles/tar.gz/HEAD -o /tmp/dotfiles.tar.gz
+mkdir -p ~/dotfiles && tar -xzf /tmp/dotfiles.tar.gz -C ~/dotfiles --strip-components=1
+cd ~/dotfiles
+bash install.sh [profile]
+```
+
 Available profiles:
 
 | Profile | Description |

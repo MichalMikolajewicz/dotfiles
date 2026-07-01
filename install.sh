@@ -51,6 +51,13 @@ link "$DOTFILES/nvim" "$HOME/.config/nvim"
 link "$DOTFILES/tmux" "$HOME/.config/tmux"
 link "$DOTFILES/ghostty" "$HOME/.config/ghostty"
 
+# lazygit config path isn't XDG-consistent across platforms
+if [ "$(uname)" = "Darwin" ]; then
+  link "$DOTFILES/lazygit/config.yml" "$HOME/Library/Application Support/lazygit/config.yml"
+else
+  link "$DOTFILES/lazygit/config.yml" "$HOME/.config/lazygit/config.yml"
+fi
+
 echo "$PROFILE" > "$HOME/.config/nvim/.profile"
 echo "profile: $PROFILE"
 
@@ -58,22 +65,43 @@ echo "profile: $PROFILE"
 #
 # plugins/ is gitignored, so a fresh checkout has none — and without
 # vim-tmux-navigator the seamless <C-h/j/k/l> between nvim and tmux never works,
-# and the catppuccin status bar never renders. Cloning them here makes the
+# and the gruvbox status bar never renders. Cloning them here makes the
 # install truly one-shot. Idempotent: existing dirs are skipped, so re-runs are
-# cheap. Needs only git; tmux itself does not have to be installed yet.
+# cheap. Prefers git; falls back to a plain tarball download (curl + tar) if
+# git's smart-http protocol is blocked but HTTPS downloads aren't. tmux itself
+# does not have to be installed yet.
 bootstrap_tmux_plugins() {
   local plugdir="$HOME/.config/tmux/plugins"
   local conf="$HOME/.config/tmux/tmux.conf"
   mkdir -p "$plugdir"
 
-  clone() { # repo  destdir  name
-    if [ -d "$2/.git" ]; then
+  # Some networks (corporate proxies, locked-down devpods) block git's
+  # smart-http protocol but allow plain HTTPS downloads. Fall back to grabbing
+  # a tarball of the default branch via codeload — same content, no git needed.
+  # Downside: no `.git`, so `prefix + U` can't update this plugin until a real
+  # `git clone` succeeds (delete the dir and re-run install.sh once it does).
+  fetch_tarball() { # repo (owner/name)  destdir
+    local tmp
+    tmp="$(mktemp -d)" || return 1
+    if curl -fsSL "https://codeload.github.com/$1/tar.gz/HEAD" -o "$tmp/repo.tar.gz" \
+       && mkdir -p "$2" \
+       && tar -xzf "$tmp/repo.tar.gz" -C "$2" --strip-components=1; then
+      rm -rf "$tmp"
+      return 0
+    fi
+    rm -rf "$tmp" "$2"
+    return 1
+  }
+
+  clone() { # repo (https URL)  destdir  name
+    if [ -d "$2/.git" ] || [ -d "$2" ]; then
       echo "exists  tmux/$3"
-    elif git clone --quiet --depth 1 "$1" "$2"; then
+    elif git clone --quiet --depth 1 "$1" "$2" 2>/dev/null; then
       echo "fetched tmux/$3"
+    elif fetch_tarball "${1#https://github.com/}" "$2"; then
+      echo "fetched tmux/$3 (tarball fallback, git blocked)"
     else
-      rm -rf "$2"                       # clean partial clone so a later run retries
-      echo "warn    failed to clone $1 (tmux plugins incomplete)"
+      echo "warn    failed to fetch $1 (tmux plugins incomplete)"
     fi
   }
 

@@ -1,0 +1,13 @@
+# Explicit hex theme so the selected-row highlight doesn't depend on named
+# ANSI colors / terminfo negotiation (which can silently fail over SSH into
+# minimal containers). Matches the gruvbox-material accent used for the
+# nvim-embedded lazygit (see nvim/lua/plugins/snacks.lua).
+gui:
+  theme:
+    selectedLineBgColor:
+      - "#d8a657"
+    selectedRangeBgColor:
+      - "#d8a657"
+    activeBorderColor:
+      - "#d8a657"
+      - bold
