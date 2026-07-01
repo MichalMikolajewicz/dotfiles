@@ -21,3 +21,28 @@ if vim.env.SSH_CONNECTION or vim.env.SSH_TTY then
     end,
   })
 end
+
+-- LazyVim defaults shiftwidth/tabstop to 2 everywhere; web/node ecosystems (JS, TS,
+-- JSX/TSX, HTML, CSS, Vue, Svelte...) conventionally use 4. Override per-filetype
+-- rather than changing the global default.
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = {
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "html",
+    "css",
+    "scss",
+    "less",
+    "json",
+    "jsonc",
+    "vue",
+    "svelte",
+  },
+  callback = function()
+    vim.bo.shiftwidth = 4
+    vim.bo.tabstop = 4
+    vim.bo.softtabstop = 4
+  end,
+})

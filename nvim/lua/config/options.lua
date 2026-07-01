@@ -9,3 +9,6 @@ local dotnet_tools = vim.env.HOME .. "/.dotnet/tools"
 if vim.fn.isdirectory(dotnet_tools) == 1 and not vim.env.PATH:find(dotnet_tools, 1, true) then
   vim.env.PATH = dotnet_tools .. ":" .. vim.env.PATH
 end
+
+-- Move the line-length guide out from the cramped 80-column convention.
+vim.opt.colorcolumn = "160"
