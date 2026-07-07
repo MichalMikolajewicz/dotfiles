@@ -12,3 +12,9 @@ end
 
 -- Move the line-length guide out from the cramped 80-column convention.
 vim.opt.colorcolumn = "160"
+
+-- Disable LazyVim's format-on-save by default. On-save formatting (prettier via
+-- conform.nvim) reflows whole files to its own tabWidth/printWidth and fights the
+-- indent settings set above per filetype. Toggle back on per-buffer with <leader>uF
+-- (or globally with <leader>uf); format once manually with <leader>cf.
+vim.g.autoformat = false
