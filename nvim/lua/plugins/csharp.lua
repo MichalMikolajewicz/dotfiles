@@ -192,6 +192,37 @@ return {
         end,
       })
 
+      -- ── Diagnostics: drop stale snapshot on save (one file at a time) ───────────
+      -- Fixes two C# annoyances: errors that only vanish after a rebuild, and the
+      -- same error shown twice. Root cause: easy-dotnet's on-demand `:Dotnet
+      -- diagnostics` writes into its OWN namespace ("easy-dotnet-diagnostics") — a
+      -- workspace *snapshot* the live Roslyn LSP never clears, so it lingers and
+      -- overlaps the LSP's live diagnostics (also why <leader>xx/Trouble looked
+      -- flaky). The live LSP namespace is left untouched.
+      --
+      -- This is deliberately cheap and per-buffer — it does NOT re-analyze the
+      -- project (Roslyn does that on its own schedule). It only drops the stale
+      -- cached snapshot for the ONE file you just edited/saved, and only when that
+      -- snapshot actually has something for it. If you never run `:Dotnet
+      -- diagnostics`, snapshot_ns caches to `false` and the callback is a no-op.
+      -- update_in_insert stays OFF so typing is lag-free; the live LSP already
+      -- re-pulls on InsertLeave, so by the time you :w its diagnostics are fresh.
+      local snapshot_ns ---@type number|false|nil
+      local function clear_snapshot(buf)
+        if snapshot_ns == nil then
+          snapshot_ns = vim.api.nvim_get_namespaces()["easy-dotnet-diagnostics"] or false
+        end
+        if snapshot_ns and vim.diagnostic.get(buf, { namespace = snapshot_ns })[1] then
+          vim.diagnostic.reset(snapshot_ns, buf)
+        end
+      end
+      local diag_augroup = vim.api.nvim_create_augroup("easy_dotnet_diagnostics", { clear = true })
+      vim.api.nvim_create_autocmd({ "InsertLeave", "BufWritePost" }, {
+        group = diag_augroup,
+        pattern = "*.cs",
+        callback = function(args) clear_snapshot(args.buf) end,
+      })
+
       -- Example command
       vim.api.nvim_create_user_command("Secrets", function()
         dotnet.secrets()
