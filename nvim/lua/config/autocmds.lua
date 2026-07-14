@@ -46,3 +46,13 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.bo.softtabstop = 4
   end,
 })
+
+-- Auto-reload buffers changed on disk (e.g. VS Code/Copilot saved the file you also have open
+-- in nvim). autoread is on by default, but nvim only re-checks the file on a few events, so
+-- without this you can still land on a stale buffer or get a "file changed since reading it"
+-- nudge. checktime on focus / buffer-enter / cursor-idle makes autoread pick up the external
+-- write immediately. Pairs with swapfile=false (options.lua) for conflict-free parallel editing.
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+  command = "silent! checktime",
+  group = vim.api.nvim_create_augroup("autochecktime", { clear = true }),
+})
