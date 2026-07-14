@@ -18,3 +18,12 @@ vim.opt.colorcolumn = "160"
 -- indent settings set above per filetype. Toggle back on per-buffer with <leader>uF
 -- (or globally with <leader>uf); format once manually with <leader>cf.
 vim.g.autoformat = false
+
+-- No swap files. In a parallel-editing workflow (nvim + VS Code/Copilot) vim's .swp
+-- "crash recovery" only ever surfaces as false-alarm "Swap file already exists / another
+-- program is using it" prompts — from stale .swp left by killed nvim sessions, or from
+-- VS Code's Neovim/vim extension writing its own .swp on the same file. Git is the real
+-- safety net, and LazyVim already sets undofile=true for cross-session undo. swapfile=false
+-- kills every swap prompt. (backup is already off; writebackup is a harmless temp file that's
+-- auto-deleted after each write.)
+vim.opt.swapfile = false
