@@ -47,6 +47,25 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- Pin format-on-save OFF for yaml + js/ts. LazyVim's format-on-save (BufWritePre →
+-- LazyVim.format) checks `vim.b.autoformat` first (buffer-local wins over `vim.g.autoformat`),
+-- so a buffer-local false here survives `<leader>uf` flipping the GLOBAL toggle on for other
+-- languages. Explicit formatting still works: `<leader>cf` / `:LazyFormat` call format() with
+-- force=true, which bypasses the enabled() check entirely. Global autoformat is already false
+-- (options.lua); this just makes the guarantee explicit per-filetype.
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = {
+    "yaml",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+  },
+  callback = function()
+    vim.b.autoformat = false
+  end,
+})
+
 -- Auto-reload buffers changed on disk (e.g. VS Code/Copilot saved the file you also have open
 -- in nvim). autoread is on by default, but nvim only re-checks the file on a few events, so
 -- without this you can still land on a stale buffer or get a "file changed since reading it"
